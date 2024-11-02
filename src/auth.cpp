@@ -35,12 +35,18 @@ bool Auth::auth(int id, const std::string& hash){
  sql+=hash+"' LIMIT 1;";
  return db.exec(sql.c_str()).suc;
 }
-bool Auth::account_exists(int id){
- if(id==-1)return 0;
+bool Auth::account_exists(int uid){
+ if(uid==-1)return 0;
  std::string sql=std::string("SELECT id FROM '")+acc_tbl+"' WHERE id=";
- sql+=std::to_string(id)+" LIMIT 1;";
+ sql+=std::to_string(uid)+" LIMIT 1;";
  return db.exec(sql.c_str()).res.size()>0;
 }
 std::string Auth::hash(const std::string& password){
  return password;
+}
+std::string Auth::get_email(int uid){
+ if(!account_exists(uid))return std::string("");
+ std::string sql=std::string("SELECT email FROM '")+acc_tbl+"' WHERE id=";
+ sql+=std::to_string(uid)+" LIMIT 1;";
+ return db.exec(sql.c_str()).res;
 }

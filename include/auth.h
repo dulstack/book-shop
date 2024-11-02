@@ -14,6 +14,7 @@ class Auth{
   bool create_acc(const std::string& email, const std::string& password);
   int get_id(const std::string& email);
   bool auth(int id, const std::string& hash);		//verify the login details
+  std::string get_email(int id);
  protected:
   bool account_exists(int id);
   std::string hash(const std::string& pasword);			//not implemented yet

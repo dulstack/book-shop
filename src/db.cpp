@@ -8,7 +8,10 @@ DB::~DB(){
 }
 bool DB::table_exists(const char* tbl_name){
  if(!db)return 0;
- std::string sql="SELECT * FROM '";sql+=sql_str(tbl_name)+"' LIMIT 1;";
+ std::string sql="SELECT * FROM '";
+ std::string tname=tbl_name;
+ sql+=sql_str(tname);
+ sql+="' LIMIT 1;";
  return this->exec(sql.c_str()).suc;
 }
 bool DB::open(const char* path){
@@ -35,9 +38,9 @@ Query_res DB::exec(const char* sql){
   }
   while(sqlite3_step(st)!=SQLITE_DONE){
    for(int col=0; col<sqlite3_column_count(st); col++){
-    res.res+=(const char*)sqlite3_column_text(st, col);
+    const char* col_val=(const char*)sqlite3_column_text(st, col);
+    if(col_val)res.res+=col_val;
    }
-   res.res+="\n";
   }
   sqlite3_finalize(st);
   res.suc=1;

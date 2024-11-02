@@ -42,7 +42,9 @@ bool Auth::account_exists(int uid){
  return db.exec(sql.c_str()).res.size()>0;
 }
 std::string Auth::hash(const std::string& password){
- return password;
+ std::string p_hashed=password;
+ //TODO: encrypt the password
+ return p_hashed;
 }
 std::string Auth::get_email(int uid){
  if(!account_exists(uid))return std::string("");

@@ -16,6 +16,8 @@ class AccountsApi{
     Rest::Router& get_router();
   protected:
     std::unordered_map<std::string, std::string> query_vars(const Http::Request& rq);
+    bool auth(const Http::Request& rq);
+    void print_success(Http::ResponseWriter&, bool suc);
     Rest::Router router;
     Auth* storage;
 };

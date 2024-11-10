@@ -11,16 +11,39 @@ void BankApi::bind(){
 }
 void BankApi::on_deposit(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
- response.send(Http::Code::Ok, R"({
-  "response": "success",
-  "code": "200"
-})");
+ bool suc=0;
+ if(this->auth(rq)){
+  int id=std::stoi(rq.cookies().get("id").value);
+  std::string s_ammount=query_vars(rq)["ammount"];
+  if(!s_ammount.empty()){
+   float ammount=0;
+   try{ammount=std::stof(s_ammount);}
+   catch(...){}
+   if(ammount>0)suc=((Bank*)storage)->deposit(id, ammount);
+  }
+ }
+ print_success(response, suc);
 }
 void BankApi::on_transfer(const Rest::Request& rq, Http::ResponseWriter response){
-
+ response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+ bool suc=0;
+ if(this->auth(rq)){
+  int sender_id=std::stoi(rq.cookies().get("id").value);
+  std::unordered_map<std::string, std::string> vars=query_vars(rq);
+  std::string s_ammount=vars["ammount"];
+  std::string s_target_id=vars["id"];
+  if(!s_ammount.empty()&&!s_target_id.empty()){
+   float ammount=0;
+   try{ammount=std::stof(s_ammount);}
+   catch(...){}
+   int t_id=std::stoi(s_target_id);
+   if(ammount>0)suc=((Bank*)storage)->send_cash(sender_id,t_id, ammount);
+  }
+ }
+ print_success(response, suc);
 }
 void BankApi::on_getBal(const Rest::Request& rq, Http::ResponseWriter response){
-
+ response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
 }
 int main(int argc, char** argv){
   Address addr(Ipv4::any(), Port(1024));

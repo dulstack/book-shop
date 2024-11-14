@@ -34,6 +34,7 @@ void BankApi::on_transfer(const Rest::Request& rq, Http::ResponseWriter response
   std::string s_target_id=vars["id"];
   if(!s_ammount.empty()&&!s_target_id.empty()){
    float ammount=0;
+   //prevent sending "stof" to client
    try{ammount=std::stof(s_ammount);}
    catch(...){}
    int t_id=std::stoi(s_target_id);

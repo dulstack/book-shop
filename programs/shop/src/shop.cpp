@@ -27,8 +27,12 @@ bool Shop::init(const char* db_path, const char* tbl){
  }
  return suc;
 }
-bool Shop::add_book(int seller_id, float price){
-
+bool Shop::add_book(int seller_id, const char* title, float price){
+ std::string sql="INSERT INTO books (seller_id, title, price) values(";
+ sql+=std::to_string(seller_id)+", '";
+ sql+=DB::sql_str(title)+", ";
+ sql+=std::to_string(price)+");";
+ return db.exec(sql.c_str()).suc;
 }
 bool Shop::buy_book(int uid, int book_id, int bank_id, const char* bank_pwd){
 
@@ -43,7 +47,7 @@ std::vector<Book> Shop::list_books(){
   if(res.suc){
    int id=std::stoi(res.res);
    Book book=get_book(id);
-   if(book.seller_id!=-1){
+   if(book.id!=-1){
     b_list.push_back(book);
    }
   }
@@ -51,10 +55,48 @@ std::vector<Book> Shop::list_books(){
  return b_list;
 }
 std::vector<Book> Shop::list_owned_books(int uid){
-
+ std::vector<Book> books, owned_books;
+ if(db.is_open()&&account_exists(uid)){
+  books=list_books();
+  for(int i=0; i<books.size(); i++){
+   if(is_book_owned(uid, books[i].id)){
+    owned_books.push_back(books[i]);
+   }
+  }
+ }
+ return owned_books;
 }
 Book Shop::get_book(int id){
-
+ Book book={id,-1, -1, ""};
+ enum{
+  T_SELLER_ID,
+  T_TITLE,
+  T_PRICE
+ };
+ std::string col[]={"seller_id", "title", "price"};
+ std::string sql=" FROM books WHERE book_id=";
+ sql+=std::to_string(id)+";";
+ for(int i=0; i<sizeof(col)/sizeof(std::string); i++){
+  std::string query=std::string("SELECT ")+col[i]+sql;
+  Query_res res=db.exec(query.c_str());
+  //stop the loop if there is an error
+  if(!res.suc||res.res.empty()){book.id=-1; break;}
+  switch(i){
+   case T_SELLER_ID:{
+    book.seller_id=std::stoi(res.res);
+    break;
+   }
+   case T_TITLE:{
+    book.title=res.res;
+    break;
+   }
+   case T_PRICE:{
+    book.price=std::stof(res.res);
+    break;
+   }
+  }
+ }
+ return book;
 }
 int Shop::get_book_count(){
  int count=-1;
@@ -64,4 +106,12 @@ int Shop::get_book_count(){
  if(!res.suc)return -1;
  count = std::stoi(res.res);
  return count;
+}
+bool Shop::is_book_owned(int uid, int book_id){
+ std::string sql="SELECT book_id FROM book_inventory WHERE uid=";
+ sql+=std::to_string(uid)+" AND book_id=";
+ sql+=std::to_string(book_id)+";";
+ Query_res res=db.exec(sql.c_str());
+ if(!res.suc)return 0;
+ return !res.res.empty();
 }

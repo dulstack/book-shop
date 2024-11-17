@@ -18,3 +18,6 @@ bin/%.o:src/%.cpp | bin
 	mkdir $@
 bin:
 	mkdir $@
+.PHONY: run
+run: bin/bank
+	cd bin; ./bank

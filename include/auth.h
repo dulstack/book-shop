@@ -17,7 +17,7 @@ class Auth{
   std::string get_email(int id);
  protected:
   bool account_exists(int id);
-  std::string hash(const std::string& pasword);			//not implemented yet
+  std::string hash(const std::string& pasword);		//not implemented yet
   std::string get_hash(int id);
   std::string acc_tbl;			//the string containing the table name what stores the data of accounts
   DB db;

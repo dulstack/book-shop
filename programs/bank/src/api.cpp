@@ -37,6 +37,7 @@ void BankApi::on_transfer(const Rest::Request& rq, Http::ResponseWriter response
    //prevent sending "stof" to client
    try{ammount=std::stof(s_ammount);}
    catch(...){}
+
    int t_id=std::stoi(s_target_id);
    if(ammount>0)suc=((Bank*)storage)->send_cash(sender_id,t_id, ammount);
   }

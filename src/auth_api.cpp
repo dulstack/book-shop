@@ -75,7 +75,12 @@ std::unordered_map<std::string, std::string> AccountsApi::query_vars(const Http:
    nlohmann::json j=nlohmann::json::parse(rq.body());
    nlohmann::json::iterator it=j.begin();
    while(it!=j.end()){
-    res[it.key()]=it.value().get<std::string>();
+    if(it.value().is_string()){
+     res[it.key()]=it.value().get<std::string>();
+    }
+    else if(it.value().is_number()){
+     res[it.key()]=std::to_string(it.value().get<float>());
+    }
     it++;
    }
   }

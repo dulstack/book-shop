@@ -1,6 +1,6 @@
 #include "api.h"
 #include "bank.h"
-
+#include <nlohmann/json.hpp>
 void BankApi::bind(){
  this->storage=new Bank;
  this->AccountsApi::bind();
@@ -46,6 +46,18 @@ void BankApi::on_transfer(const Rest::Request& rq, Http::ResponseWriter response
 }
 void BankApi::on_getBal(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+ Bank* storage=(Bank*)this->storage;
+ int uid=-1;
+ float bal=-1;
+ try{uid=std::stoi(query_vars(rq)["id"]);}
+ catch(...){print_success(response, 0);return;}
+ bal=storage->get_bal(uid);
+ if(uid==-1||bal==-1){
+  response.send((Http::Code)404, R"({"response": "not found"})");return;
+ }
+ nlohmann::json j;
+ j["response"]=bal;
+ response.send(Http::Code::Ok, j.dump());
 }
 int main(int argc, char** argv){
   Address addr(Ipv4::any(), Port(1024));

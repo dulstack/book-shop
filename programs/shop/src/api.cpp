@@ -29,6 +29,19 @@ void ShopApi::on_add_book(const Rest::Request& rq, Http::ResponseWriter response
 }
 void ShopApi::on_buy_book(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+ bool suc=0;
+ if(auth(rq)){
+  std::unordered_map<std::string, std::string> vars=query_vars(rq);
+  std::string s_book_id=vars["book_id"], s_bank_id=vars["bank_id"],bank_pwd=vars["bank_pwd"];
+  int uid=std::stoi(rq.cookies().get("id").value);
+  if(!s_book_id.empty()&&!s_bank_id.empty()&&!bank_pwd.empty()){
+   try
+    suc=((Shop*)storage)->buy_book(uid, std::stoi(s_book_id), std::stoi(s_bank_id), bank_pwd.c_str());
+   }
+   catch(...){}
+  }
+ }
+ print_success(response, suc);
 }
 void ShopApi::on_list_books(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));

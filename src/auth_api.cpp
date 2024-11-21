@@ -32,6 +32,23 @@ void AccountsApi::on_auth(const Rest::Request& rq, Http::ResponseWriter response
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
  print_success(response, this->auth(rq));
 }
+void AccountsApi::on_user_info(const Rest::Request& rq, Http::ResponseWriter response){
+ response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+ std::string param=rq.param(":user").as<std::string>();
+ int id=-1;
+ try{
+  id=std::stoi(param);
+ }
+ catch(...){}
+ if(!storage->account_exists(id)){
+  id=storage->get_id(param);
+  if(!storage->account_exists(id)){response.send((Http::Code)404, R"({"response": "not found"})");return;}
+ }
+ nlohmann::json info;
+ info["id"]=id;
+ info["email"]=storage->get_email(id);
+ response.send(Http::Code::Ok, info.dump(1));
+}
 void AccountsApi::print_success(Http::ResponseWriter& res, bool suc){
  if(suc)res.send(Http::Code::Ok, R"({"response":"success"})");
  else res.send(Http::Code::Ok, R"({"response":"fail"})");
@@ -40,6 +57,7 @@ void AccountsApi::bind(){
  Rest::Routes::Post(router, "/api/create_account", Rest::Routes::bind(&AccountsApi::on_createAcc, this));
  Rest::Routes::Post(router, "/api/log_in", Rest::Routes::bind(&AccountsApi::on_login, this));
  Rest::Routes::Post(router, "/api/auth", Rest::Routes::bind(&AccountsApi::on_auth, this));
+ Rest::Routes::Get(router, "/api/user_info/:user", Rest::Routes::bind(&AccountsApi::on_user_info, this));
 }
 Rest::Router& AccountsApi::get_router(){
  return this->router;

@@ -21,5 +21,6 @@ class Auth{
   std::string get_hash(int id);
   std::string acc_tbl;			//the string containing the table name what stores the data of accounts
   DB db;
+  friend class AccountsApi;
 };
 #endif

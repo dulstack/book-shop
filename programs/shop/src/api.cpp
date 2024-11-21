@@ -35,7 +35,7 @@ void ShopApi::on_buy_book(const Rest::Request& rq, Http::ResponseWriter response
   std::string s_book_id=vars["book_id"], s_bank_id=vars["bank_id"],bank_pwd=vars["bank_pwd"];
   int uid=std::stoi(rq.cookies().get("id").value);
   if(!s_book_id.empty()&&!s_bank_id.empty()&&!bank_pwd.empty()){
-   try
+   try{
     suc=((Shop*)storage)->buy_book(uid, std::stoi(s_book_id), std::stoi(s_bank_id), bank_pwd.c_str());
    }
    catch(...){}
@@ -45,9 +45,31 @@ void ShopApi::on_buy_book(const Rest::Request& rq, Http::ResponseWriter response
 }
 void ShopApi::on_list_books(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+ std::vector<Book> books=((Shop*)storage)->list_books();
+ std::vector<nlohmann::json> j_books;
+ j_books.resize(books.size());
+ for(int i=0; i<books.size(); i++){
+  j_books[i]=get_book_json(books[i]);
+ }
+ nlohmann::json j;
+ j["books"]=j_books;
+ response.send(Http::Code::Ok, j.dump(1));
 }
 void ShopApi::on_list_owned_books(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));
+ if(auth(rq)){
+  std::vector<Book> books=((Shop*)storage)->list_owned_books(std::stoi(rq.cookies().get("id").value));
+  std::vector<nlohmann::json> j_books;
+  j_books.resize(books.size());
+  for(int i=0; i<books.size(); i++){
+   j_books[i]=get_book_json(books[i]);
+  }
+  nlohmann::json j;
+  j["books"]=j_books;
+  response.send(Http::Code::Ok, j.dump(1));
+  return;
+ }
+ response.send(Http::Code::Ok, R"({"response":"unauthorized access"})");
 }
 void ShopApi::on_book_info(const Rest::Request& rq, Http::ResponseWriter response){
  response.headers().add<Http::Header::ContentType>(MIME(Application, Json));

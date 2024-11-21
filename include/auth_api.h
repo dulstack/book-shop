@@ -12,6 +12,7 @@ class AccountsApi{
     void on_createAcc(const Rest::Request& rq, Http::ResponseWriter response);
     void on_login(const Rest::Request& rq, Http::ResponseWriter response);
     void on_auth(const Rest::Request& rq, Http::ResponseWriter response);
+    void on_user_info(const Rest::Request& rq, Http::ResponseWriter response);
     virtual void bind();
     Rest::Router& get_router();
   protected:
